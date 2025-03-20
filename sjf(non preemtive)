@@ -1,0 +1,102 @@
+#include <stdio.h>
+
+typedef struct {
+    int id;
+    int at;
+    int bt;
+    int ct;
+    int tat;
+    int wt;
+} Process;
+
+void inputProcesses(Process p[], int n);
+void sortByArrival(Process p[], int n);
+void computeSJF(Process p[], int n);
+void displayProcesses(Process p[], int n);
+void calculateAverages(Process p[], int n);
+
+int main() {
+    int n;
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    Process p[n];
+    inputProcesses(p, n);
+    sortByArrival(p, n);
+    computeSJF(p, n);
+    displayProcesses(p, n);
+    calculateAverages(p, n);
+
+    return 0;
+}
+
+void inputProcesses(Process p[], int n) {
+    for (int i = 0; i < n; i++) {
+        p[i].id = i + 1;
+        printf("Enter Arrival Time and Burst Time for Process %d: ", i + 1);
+        scanf("%d %d", &p[i].at, &p[i].bt);
+    }
+}
+
+void sortByArrival(Process p[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (p[j].at > p[j + 1].at) {
+                Process temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void computeSJF(Process p[], int n) {
+    int currentTime = 0, completed = 0;
+
+    while (completed < n) {
+        int minBurstTime = 10000;
+        int shortestJobIndex = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (p[i].at <= currentTime && p[i].bt < minBurstTime && p[i].ct == 0) {
+                minBurstTime = p[i].bt;
+                shortestJobIndex = i;
+            }
+        }
+
+        if (shortestJobIndex == -1) {
+            currentTime++;
+            continue;
+        }
+
+        Process *proc = &p[shortestJobIndex];
+        proc->ct = currentTime + proc->bt;
+        proc->tat = proc->ct - proc->at;
+        proc->wt = proc->tat - proc->bt;
+        currentTime = proc->ct;
+        completed++;
+    }
+}
+
+void displayProcesses(Process p[], int n) {
+    printf("\nProcess\tAT\tBT\tCT\tTAT\tWT\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].id, p[i].at, p[i].bt, p[i].ct, p[i].tat, p[i].wt);
+    }
+}
+
+void calculateAverages(Process p[], int n) {
+    int totalTAT = 0, totalWT = 0;
+
+    for (int i = 0; i < n; i++) {
+        totalTAT += p[i].tat;
+        totalWT += p[i].wt;
+    }
+
+    float avgTAT = (float)totalTAT / n;
+    float avgWT = (float)totalWT / n;
+
+    printf("\nAverage Turnaround Time: %.2f\n", avgTAT);
+    printf("Average Waiting Time: %.2f\n", avgWT);
+}
